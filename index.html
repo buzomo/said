@@ -54,7 +54,7 @@
             margin-bottom: 20px;
             opacity: 0.9;
         }
-        .upload-btn, .fetch-btn, .view-btn {
+        .upload-btn, .view-btn {
             padding: 14px 28px;
             font-size: 0.95rem;
             font-weight: 500;
@@ -69,7 +69,7 @@
             text-decoration: none;
             display: inline-block;
         }
-        .upload-btn:hover, .fetch-btn:hover, .view-btn:hover {
+        .upload-btn:hover, .view-btn:hover {
             background-color: #e2d7c8;
             transform: translateY(-3px);
             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
@@ -376,7 +376,7 @@
             say.poet.blueでのつぶやきを<br>グラフとキーワードで分析
         </div>
         <div>
-            <button class="fetch-btn" id="fetchBtn">🔄 最新データを取得</button>
+            <a href="https://say.poet.blue/stats" class="view-btn">今すぐ見る</a>
         </div>
         <div class="or-label">または</div>
         <div>
@@ -385,15 +385,11 @@
                 <input type="file" id="csvFile" accept=".csv" style="display: none;">
             </label>
         </div>
-        <div style="margin-top: 16px;">
-            <a href="https://say.poet.blue/stats" class="view-btn">say.poet.blue/stats に遷移する</a>
-        </div>
     </div>
     <!-- Main screen -->
     <div class="main-screen" id="mainScreen">
         <div class="toolbar">
             <button class="reload-btn" id="reimportBtn">再度取り込む</button>
-            <button class="refresh-btn" id="refreshBtn">最新データを更新</button>
         </div>
         <div class="dashboard">
             <!-- Keyword Watch Corner -->
@@ -475,47 +471,6 @@
                 input.value = '';
             }
         }
-        // Fetch data from say.poet.blue API
-        async function fetchDataFromAPI() {
-            const token = localStorage.getItem('sayPoetBlueToken');
-            if (!token) {
-                alert('トークンが設定されていません');
-                return;
-            }
-            try {
-                const response = await fetch("https://say.poet.blue/search?q=", {
-                    headers: {
-                        "accept": "*/*",
-                        "accept-language": "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7",
-                        "priority": "u=1, i",
-                        "sec-ch-ua": "\"Chromium\";v=\"142\", \"Microsoft Edge\";v=\"142\", \"Not_A Brand\";v=\"99\"",
-                        "sec-ch-ua-mobile": "?0",
-                        "sec-ch-ua-platform": "\"Windows\"",
-                        "sec-fetch-dest": "empty",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "cookie": `token=${token}`
-                    },
-                    referrer: "https://say.poet.blue/",
-                    method: "GET",
-                    mode: "cors",
-                    credentials: "include"
-                });
-                if (!response.ok) {
-                    throw new Error('APIリクエストに失敗しました');
-                }
-                const data = await response.json();
-                const processedData = data.map(item => ({
-                    'メモ内容': item.content,
-                    'タイムスタンプ': item.created_at
-                }));
-                processData(processedData);
-                document.getElementById('welcomeScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'block';
-            } catch (error) {
-                alert('データ取得エラー: ' + error.message);
-            }
-        }
         // Initial screen → Main screen
         document.getElementById('csvFile').addEventListener('change', function (e) {
             const file = e.target.files[0];
@@ -529,14 +484,10 @@
                 error: err => alert('CSV読み込みエラー: ' + err)
             });
         });
-        // Fetch button
-        document.getElementById('fetchBtn').addEventListener('click', fetchDataFromAPI);
         // Reimport button
         document.getElementById('reimportBtn')?.addEventListener('click', function () {
             document.getElementById('csvFile').click();
         });
-        // Refresh button
-        document.getElementById('refreshBtn')?.addEventListener('click', fetchDataFromAPI);
         // Setup carousel with random keywords
         function setupCarousel() {
             if (memos.length === 0) {
